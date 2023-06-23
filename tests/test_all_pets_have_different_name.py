@@ -3,10 +3,14 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
-def test_all_pets_have_different_names(go_to_my_pets):
+def test_all_pets_have_different_names(browser, go_to_my_pets):
    '''Поверяем что на странице со списком моих питомцев, у всех питомцев разные имена'''
 
-   element = WebDriverWait(pytest.driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, ".table.table-hover tbody tr")))
+      # Нажимаем на кнопку Мои питомцы
+   submit_button = WebDriverWait(browser, 10).until(
+      EC.element_to_be_clickable((By.CLASS_NAME, 'nav-link')))
+   submit_button.click()
+
    # Сохраняем в переменную pet_data элементы с данными о питомцах
    name_my_pets = pytest.driver.find_elements(By.CSS_SELECTOR, '.table.table-hover tbody tr')
 

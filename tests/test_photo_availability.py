@@ -3,35 +3,29 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
-def test_photo_availability(go_to_my_pets):
+def test_photo_availability(browser, go_to_my_pets):
    '''Поверяем что на странице со списком моих питомцев хотя бы у половины питомцев есть фото'''
 
-   element = WebDriverWait(pytest.driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, ".\\.col-sm-4.left")))
-
-   # Сохраняем в переменную statistic элементы статистики
-   statistic = pytest.driver.find_elements(By.CSS_SELECTOR, ".\\.col-sm-4.left")
+   # Нажимаем на кнопку Мои питомцы
+   submit_button = WebDriverWait(browser, 10).until(
+      EC.element_to_be_clickable((By.CLASS_NAME, 'nav-link')))
+   submit_button.click()
 
    # Сохраняем в переменную images элементы с атрибутом img
-   images = pytest.driver.find_elements(By.CSS_SELECTOR, '.table.table-hover img')
+   images = browser.find_elements(By.CSS_SELECTOR, 'tr th[scope=row] img')
 
-   # Получаем количество питомцев из данных статистики
-   number = statistic[0].text.split('\n')
-   number = number[1].split(' ')
-   number = int(number[1])
+   # Сохраняем в переменную names количество питомцев
+   names = browser.find_elements(By.CSS_SELECTOR, 'td:nth-child(2)')
+   count_names = len(names)
 
-   # Находим половину от количества питомцев
-   half = number // 2
-
-   # Настраиваем неявные ожидания:
-   pytest.driver.implicitly_wait(10)
+   name_list = []
+   num_photos_pets = 0
 
    # Находим количество питомцев с фотографией
-   number_а_photos = 0
-   for i in range(len(images)):
-      if images[i].get_attribute('src') != '':
-         number_а_photos += 1
+   for i in range(count_names):
+      assert names[i].text != ''
+      name_list.append(names[i].text)
+      if images[i].get_attribute('src'):
+         num_photos_pets += 1
 
-   # Проверяем что количество питомцев с фотографией больше или равно половине количества питомцев
-   assert number_а_photos >= half
-   print(f'количество фото: {number_а_photos}')
-   print(f'Половина от числа питомцев: {half}')
+   assert count_names / 2 <= float(num_photos_pets)

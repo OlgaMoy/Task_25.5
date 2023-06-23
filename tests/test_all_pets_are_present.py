@@ -2,32 +2,21 @@ import pytest
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
+from settings import user_name
 
-def test_all_pets_are_present(go_to_my_pets):
-   '''Проверяем что на странице со списком моих питомцев присутствуют все питомцы'''
 
-   element = WebDriverWait(pytest.driver, 10).until(
-      EC.presence_of_element_located((By.CSS_SELECTOR, ".\\.col-sm-4.left")))
+def test_all_pets_are_present(browser, go_to_my_pets):
+    """Проверяем что на странице со списком моих питомцев присутствуют все питомцы"""
+    assert browser.find_element(By.TAG_NAME, 'h1').text == "PetFriends"
 
-   # Сохраняем в переменную statistic элементы статистики
-   statistic = pytest.driver.find_elements(By.CSS_SELECTOR, ".\\.col-sm-4.left")
+    submit_button = WebDriverWait(pytest.driver, 10).until(
+        EC.element_to_be_clickable((By.CLASS_NAME, 'nav-link')))
+    submit_button.click()
 
-   element = WebDriverWait(pytest.driver, 10).until(
-      EC.presence_of_element_located((By.CSS_SELECTOR, ".table.table-hover tbody tr")))
+    assert browser.find_element(By.TAG_NAME, 'h2').text == user_name
 
-   # Сохраняем в переменную pets элементы карточек питомцев
-   pets = pytest.driver.find_elements(By.CSS_SELECTOR, '.table.table-hover tbody tr')
+    pet_info = browser.find_element(By.CSS_SELECTOR, 'div.left:nth-child(1)').text.split('\n')[1]
+    number_of_pets = int("".join(filter(str.isdigit, pet_info)))
+    print(number_of_pets)
 
-   # Получаем количество питомцев из данных статистики
-   number = statistic[0].text.split('\n')
-   number = number[1].split(' ')
-   number = int(number[1])
-
-   # Получаем количество карточек питомцев
-   number_of_pets = len(pets)
-
-   # Настраиваем неявные ожидания:
-   pytest.driver.implicitly_wait(10)
-
-   # Проверяем что количество питомцев из статистики совпадает с количеством карточек питомцев
-   assert number == number_of_pets
+    assert len(browser.find_elements(By.CSS_SELECTOR, 'tbody tr')) == number_of_pets
